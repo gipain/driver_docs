@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Контрагенти - driver_docs{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Контрагенти</h2>
+    <a href="{% url 'partners:counterparty_create' %}" class="btn btn-primary">+ Новий контрагент</a>
+</div>
+<table class="table table-striped bg-white">
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>ЄДРПОУ</th>
+            <th>ІПН</th>
+            <th>Директор</th>
+            <th>Телефон</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in counterparties %}
+        <tr>
+            <td>{{ c.name }}</td>
+            <td>{{ c.edrpou }}</td>
+            <td>{{ c.inn }}</td>
+            <td>{{ c.director }}</td>
+            <td>{{ c.phone }}</td>
+            <td><a href="{% url 'partners:counterparty_update' c.pk %}" class="btn btn-sm btn-outline-secondary">Редагувати</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">Контрагентів ще немає.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

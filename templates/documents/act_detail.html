@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Акт №{{ act.number }} - driver_docs{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Акт №{{ act.number }}</h2>
+    <div>
+        <a href="{% url 'documents:act_pdf' act.pk %}" class="btn btn-success">Завантажити PDF</a>
+        <a href="{% url 'documents:act_preview' act.pk %}" class="btn btn-outline-secondary" target="_blank">Переглянути HTML</a>
+    </div>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <p><strong>Дата:</strong> {{ act.date }}</p>
+        <p><strong>Договір:</strong> {{ act.contract }}</p>
+        <p><strong>Замовник:</strong> {{ act.customer.name }}</p>
+        <p><strong>Виконавець:</strong> {{ act.executor.name }}</p>
+        <p><strong>Сума без ПДВ:</strong> {{ act.amount_no_vat }} грн</p>
+        <p><strong>ПДВ:</strong> {{ act.vat_amount }} грн</p>
+        <p><strong>Сума з ПДВ:</strong> {{ act.amount_with_vat }} грн</p>
+    </div>
+</div>
+<h4>Рядки послуг</h4>
+<table class="table table-sm bg-white">
+    <thead><tr><th>Опис</th><th>Маса, т</th><th>Сума, грн</th></tr></thead>
+    <tbody>
+        {% for line in act.lines.all %}
+        <tr><td>{{ line.description }}</td><td>{{ line.weight_t }}</td><td>{{ line.amount }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Автомобілі - driver_docs{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Автомобілі</h2>
+    <a href="{% url 'fleet:vehicle_create' %}" class="btn btn-primary">+ Новий автомобіль</a>
+</div>
+<table class="table table-striped bg-white">
+    <thead>
+        <tr><th>Держ.номер</th><th>Марка / модель</th><th>Вантажопідйомність, т</th><th>Техогляд до</th><th>Статус</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for v in vehicles %}
+        <tr>
+            <td>{{ v.plate_number }}</td>
+            <td>{{ v.brand_model }}</td>
+            <td>{{ v.capacity_t }}</td>
+            <td>{{ v.inspection_expiry }}</td>
+            <td>
+                {% if v.is_inspection_expired %}
+                    <span class="badge bg-danger">прострочено</span>
+                {% else %}
+                    <span class="badge bg-success">чинний</span>
+                {% endif %}
+            </td>
+            <td><a href="{% url 'fleet:vehicle_update' v.pk %}" class="btn btn-sm btn-outline-secondary">Редагувати</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">Автомобілів ще немає.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

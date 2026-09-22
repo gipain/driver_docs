@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Акти - driver_docs{% endblock %}
+{% block content %}
+<h2 class="mb-3">Акти здачі-прийняття робіт</h2>
+<table class="table table-striped bg-white">
+    <thead><tr><th>Номер</th><th>Дата</th><th>Замовник</th><th>Сума з ПДВ</th><th></th></tr></thead>
+    <tbody>
+        {% for act in acts %}
+        <tr>
+            <td>{{ act.number }}</td>
+            <td>{{ act.date }}</td>
+            <td>{{ act.customer.name }}</td>
+            <td>{{ act.amount_with_vat }} грн</td>
+            <td><a href="{% url 'documents:act_detail' act.pk %}" class="btn btn-sm btn-outline-secondary">Відкрити</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted">Актів ще немає.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

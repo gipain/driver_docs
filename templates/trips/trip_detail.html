@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Рейс №{{ trip.pk }} - driver_docs{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Рейс №{{ trip.pk }}</h2>
+    <div>
+        {% if trip.status == 'draft' %}
+            <form method="post" action="{% url 'trips:trip_confirm' trip.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Підтвердити рейс</button>
+            </form>
+        {% endif %}
+        {% if trip.status == 'confirmed' %}
+            {% if trip.ttn %}
+                <a href="{% url 'documents:ttn_xlsx' trip.ttn.pk %}" class="btn btn-outline-success">ТТН (xlsx)</a>
+                <a href="{% url 'documents:ttn_pdf' trip.ttn.pk %}" class="btn btn-outline-success">ТТН (pdf)</a>
+            {% else %}
+                <form method="post" action="{% url 'documents:generate_ttn' trip.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Сформувати ТТН</button>
+                </form>
+            {% endif %}
+        {% endif %}
+        <a href="{% url 'trips:trip_update' trip.pk %}" class="btn btn-outline-secondary">Редагувати</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <p>
+            <strong>Статус:</strong>
+            {% if trip.status == 'confirmed' %}
+                <span class="badge bg-success">підтверджено</span>
+            {% else %}
+                <span class="badge bg-secondary">чернетка</span>
+            {% endif %}
+        </p>
+        <p><strong>Договір:</strong> {{ trip.contract }}</p>
+        <p><strong>Водій:</strong> {{ trip.driver.full_name }} ({{ trip.driver.license_number }})</p>
+        <p><strong>Автомобіль:</strong> {{ trip.vehicle.brand_model }} ({{ trip.vehicle.plate_number }})</p>
+        <p><strong>Причіп:</strong> {% if trip.trailer %}{{ trip.trailer.brand_model }} ({{ trip.trailer.plate_number }}){% else %}—{% endif %}</p>
+        <p><strong>Перевізник:</strong> {{ trip.carrier.name }}</p>
+        <p><strong>Вантажовідправник:</strong> {{ trip.sender.name }}</p>
+        <p><strong>Вантажоодержувач:</strong> {{ trip.receiver.name }}</p>
+        <p><strong>Дата рейсу:</strong> {{ trip.date }}</p>
+        <p><strong>Маршрут:</strong> {{ trip.loading_address }} → {{ trip.unloading_address }}</p>
+        <p><strong>Маса брутто:</strong> {{ trip.weight_t }} т</p>
+        <p><strong>Сума без ПДВ:</strong> {{ trip.amount_no_vat }} грн</p>
+        <p><strong>Вантаж:</strong> {{ trip.cargo_name|default:"—" }} ({{ trip.places_count }} {{ trip.cargo_unit }}{% if trip.cargo_packaging %}, {{ trip.cargo_packaging }}{% endif %})</p>
+    </div>
+</div>
+
+<h4>Перевірка готовності до підтвердження</h4>
+<div class="card mb-4">
+    <div class="card-body">
+        {% if validation_errors %}
+            <ul class="mb-0 text-danger">
+                {% for err in validation_errors %}
+                    <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-success mb-0">Усі перевірки пройдено - рейс можна підтверджувати.</p>
+        {% endif %}
+        {% if amount_is_anomaly %}
+            <p class="text-warning mt-2 mb-0">
+                Бонус (z-score): сума рейсу помітно відхиляється від історії цього маршруту
+                (z = {{ amount_z_score|floatformat:2 }}). Це лише попередження, не заборона -
+                варто перевірити вручну.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<h4>Попередній перегляд автозаповнення документа</h4>
+<div class="card mb-4">
+    <div class="card-body">
+        <p><strong>Габарити авто (Д×Ш×В):</strong> {{ ttn_context.vehicle_length_m }} × {{ ttn_context.vehicle_width_m }} × {{ ttn_context.vehicle_height_m }} м</p>
+        <p><strong>Вантажопідйомність:</strong> {{ ttn_context.vehicle_capacity_t }} т</p>
+        <p><strong>Маса брутто словами:</strong> {{ ttn_context.weight_words }}</p>
+        <p><strong>ПДВ 20%:</strong> {{ ttn_context.vat_amount }} грн</p>
+        <p><strong>Сума з ПДВ:</strong> {{ ttn_context.amount_with_vat }} грн</p>
+        <p><strong>Сума з ПДВ словами:</strong> {{ ttn_context.amount_with_vat_words }}</p>
+    </div>
+</div>
+
+<h4>Журнал змін статусу</h4>
+<table class="table table-sm bg-white">
+    <thead><tr><th>Дата й час</th><th>З статусу</th><th>У статус</th></tr></thead>
+    <tbody>
+        {% for log in trip.status_logs.all %}
+        <tr>
+            <td>{{ log.changed_at }}</td>
+            <td>{{ log.get_from_status_display }}</td>
+            <td>{{ log.get_to_status_display }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-muted">Змін статусу ще не було.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

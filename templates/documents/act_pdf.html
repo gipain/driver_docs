@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Акт №{{ act.number }}</title>
+<style>
+    @font-face {
+        font-family: 'DejaVu Sans';
+        src: url('{{ font_regular_uri }}');
+        font-weight: normal;
+    }
+    @font-face {
+        font-family: 'DejaVu Sans';
+        src: url('{{ font_bold_uri }}');
+        font-weight: bold;
+    }
+    @page {
+        size: A4;
+        margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'DejaVu Sans', sans-serif;
+        font-size: 11px;
+        color: #000;
+        line-height: 1.4;
+    }
+    .approve-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+    .approve-col {
+        width: 48%;
+        text-align: center;
+    }
+    .approve-col .label { font-weight: bold; }
+    .approve-col .sign-line {
+        margin-top: 26px;
+        border-top: 1px solid #000;
+        padding-top: 3px;
+    }
+    h1 {
+        text-align: center;
+        font-size: 15px;
+        margin: 6px 0 2px;
+    }
+    .subtitle {
+        text-align: center;
+        margin-bottom: 14px;
+    }
+    p.body-text { text-align: justify; margin: 6px 0; }
+    table.lines {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+    }
+    table.lines th, table.lines td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+        font-size: 10.5px;
+        text-align: left;
+    }
+    table.lines th { font-weight: bold; text-align: center; }
+    table.lines td.num { text-align: right; }
+    .totals { margin: 10px 0; }
+    .signatures {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 24px;
+    }
+    .signatures .col { width: 48%; }
+    .signatures .sign-line {
+        margin-top: 26px;
+        border-top: 1px solid #000;
+        padding-top: 3px;
+    }
+    .footnote { font-size: 9px; margin-top: 18px; }
+    .requisites {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 18px;
+        font-size: 9.5px;
+    }
+    .requisites .col { width: 48%; }
+</style>
+</head>
+<body>
+
+<div class="approve-row">
+    <div class="approve-col">
+        <div class="label">ЗАТВЕРДЖУЮ</div>
+        <div>Директор</div>
+        <div>{{ ctx.executor_name }}</div>
+        <div class="sign-line">{{ ctx.executor_representative }}</div>
+    </div>
+    <div class="approve-col">
+        <div class="label">ЗАТВЕРДЖУЮ</div>
+        <div>Директор</div>
+        <div>{{ ctx.customer_name }}</div>
+        <div class="sign-line">{{ ctx.customer_representative }}</div>
+    </div>
+</div>
+
+<h1>АКТ № {{ ctx.number }}</h1>
+<div class="subtitle">здачі-прийняття робіт (надання послуг)</div>
+
+<p class="body-text">
+    Ми, представники Замовника {{ ctx.customer_name }} {{ ctx.customer_representative }},
+    з одного боку, та представник Виконавця {{ ctx.executor_name }} {{ ctx.executor_representative }},
+    з іншого боку, склали цей акт про те, що Виконавцем були проведені такі роботи
+    (надані такі послуги) по договору № {{ ctx.contract_number }} від {{ ctx.contract_date }}:
+</p>
+
+<table class="lines">
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Маршрут</th>
+            <th>Транспортний засіб / водій</th>
+            <th>Маса, т</th>
+            <th>Сума без ПДВ, грн</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in ctx.lines %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ line.route_text }}</td>
+            <td>
+                {{ line.vehicle_plate }}{% if line.trailer_plate %} причіп {{ line.trailer_plate }}{% endif %}
+                водій {{ line.driver_name }}
+            </td>
+            <td class="num">{{ line.weight_t }}</td>
+            <td class="num">{{ line.amount }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p class="totals">
+    Загальна вартість робіт (послуг) без ПДВ {{ ctx.amount_no_vat }} грн ({{ ctx.amount_no_vat_words }}),
+    ПДВ 20% - {{ ctx.vat_amount }} грн,
+    Загальна вартість робіт (послуг) з ПДВ {{ ctx.amount_with_vat }} грн ({{ ctx.amount_with_vat_words }})
+</p>
+
+<p class="body-text">Сторони претензій одна до одної не мають.</p>
+<p class="body-text">Місце складання: {{ ctx.place }}</p>
+
+<div class="signatures">
+    <div class="col">
+        <div>Від Виконавця*:</div>
+        <div class="sign-line">Директор {{ ctx.executor_representative }}</div>
+    </div>
+    <div class="col">
+        <div>Від Замовника:</div>
+        <div class="sign-line">Директор {{ ctx.customer_representative }}</div>
+    </div>
+</div>
+
+<div class="footnote">
+    * Відповідальний за здійснення господарської операції і правильність її оформлення {{ ctx.date }}
+</div>
+
+<div class="requisites">
+    <div class="col">
+        <div>{{ ctx.executor_name }}</div>
+        <div>ЄДРПОУ {{ ctx.executor_edrpou }} тел {{ ctx.executor_phone }}</div>
+        <div>{{ ctx.executor_bank_details }}</div>
+        <div>ІПН {{ ctx.executor_inn }}</div>
+        <div>Адреса {{ ctx.executor_address }}</div>
+    </div>
+    <div class="col">
+        <div>{{ ctx.customer_name }}</div>
+        <div>ЄДРПОУ {{ ctx.customer_edrpou }} тел {{ ctx.customer_phone }}</div>
+        <div>ІПН {{ ctx.customer_inn }}</div>
+        <div>Адреса {{ ctx.customer_address }}</div>
+    </div>
+</div>
+
+</body>
+</html>

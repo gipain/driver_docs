@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Реєстр і звіти - driver_docs{% endblock %}
+{% block content %}
+<h2 class="mb-2">Реєстр документів і зведені звіти за період</h2>
+<p class="text-muted">
+    Реєстр і зведений звіт формуються з реальних даних бази. Пакетна генерація
+    створює ТТН і акти для всіх підтверджених рейсів періоду, яким їх ще
+    бракує, і збирає все разом в один ZIP-архів.
+</p>
+
+<form class="row g-2 align-items-end mb-4">
+    {% csrf_token %}
+    <div class="col-auto">
+        <label class="form-label">Період з</label>
+        <input type="date" name="start" class="form-control" value="{{ start }}">
+    </div>
+    <div class="col-auto">
+        <label class="form-label">по</label>
+        <input type="date" name="end" class="form-control" value="{{ end }}">
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Групування зведеного звіту</label>
+        <select name="group_by" class="form-select">
+            <option value="counterparty">по контрагентах</option>
+            <option value="vehicle">по автомобілях</option>
+            <option value="driver">по водіях</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" formmethod="get" formaction="{% url 'documents:registry_xlsx' %}">
+            Реєстр ТТН (xlsx)
+        </button>
+        <button class="btn btn-primary" formmethod="get" formaction="{% url 'documents:summary_xlsx' %}">
+            Зведений звіт (xlsx)
+        </button>
+        <button class="btn btn-success" formmethod="post" formaction="{% url 'documents:batch_generate' %}">
+            Пакетна генерація (ZIP)
+        </button>
+    </div>
+</form>
+{% endblock %}
